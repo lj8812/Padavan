@@ -333,9 +333,9 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_greenap", "0" },
 	{ "rt_HT_RDG", "0" },
 	{ "rt_HT_AMSDU", "0" },
-	{ "rt_HT_MpduDensity", "5" },
 	{ "rt_HT_80211KV", "1" },
 	{ "rt_HT_80211R", "0" },
+	{ "rt_HT_MpduDensity", "5" },
 #if defined (USE_WID_2G) && (USE_WID_2G==7615 || USE_WID_2G==7915)
 	{ "rt_HT_BAWinSize", "256" },
 	{ "rt_ldpc", "1" },
@@ -419,7 +419,54 @@ struct nvram_pair router_defaults[] = {
 	{ "hdd_spindt", "0" },
 	{ "hdd_apmoff", "0" },
 
-	{ "ip6_service", "dhcp6" },			/* IPV6 */
+	/*autoreboot*/
+	{ "reboot_schedule_enable", "0" },
+	{ "reboot_schedule", "00000000000" },
+	
+	/* koolproxy AD */
+	{ "koolproxy_enable", "0"},
+	{ "koolproxy_https", "0"},
+	{ "koolproxy_set", "0"},
+	{ "hosts_ad", "0"},
+	{ "tv_hosts", "0"},
+	{ "koolproxy_video", "0"},
+	{ "koolproxy_cpu", "0"},
+	{ "koolproxy_prot", "0"},
+	{ "rules_list", "0"},
+	{ "koolproxy_txt_0", "https://cdn.jsdelivr.net/gh/houzi-/CDN/koolproxy.txt"},
+	{ "daily_txt_0", "https://cdn.jsdelivr.net/gh/houzi-/CDN/daily.txt"},
+	{ "kp_dat_0", "https://cdn.jsdelivr.net/gh/houzi-/CDN/kp.dat"},
+	{ "koolproxy_txt_1", "https://gitee.com/bkye/kp/raw/master/mrules/koolproxy.txt"},
+	{ "daily_txt_1", "https://gitee.com/bkye/kp/raw/master/mrules/daily.txt"},
+	{ "kp_dat_1", "https://dev.tencent.com/u/dtid_39de1afb676d0d78/p/kp/git/raw/master/kp.dat"},
+	{ "koolproxy_txt_2", ""},
+	{ "daily_txt_2", ""},
+	{ "kp_dat_2", ""},
+	{ "koolproxy_update", "0"} ,
+	{ "koolproxy_update_hour", "3" },
+	{ "kolproxy_update_min", "00" },
+	{ "ss_DNS_Redirect", "0" },
+	{ "kp_ip_x", "0" },
+	{ "kp_staticnum_x", "0" },
+	
+	/*WEB DIY*/
+	{ "w_ai", "1" },
+	{ "w_vpn_s", "0" },
+	{ "w_vpn_c", "0" },
+	{ "w_wnet", "1" },
+	{ "w_sys", "1" },
+	{ "w_usb", "1" },
+	{ "w_net", "1" },
+	{ "w_log", "1" },
+	{ "w_scu", "1" },
+	{ "w_dnsf", "1" },
+	{ "w_ss", "1" },
+	{ "w_men", "1" },
+	{ "w_adbyby", "1" },
+	{ "w_pdnsd", "1" },
+
+	{ "ip6_service", "" },
+	{ "ip6_ppe_on", "0" },
 	{ "ip6_wan_if", "0" },
 
 	{ "ip6_6in4_remote", "" },
@@ -544,6 +591,9 @@ struct nvram_pair router_defaults[] = {
 	/* ttyd related */
 	{ "ttyd_enable", "0" },
 	{ "ttyd_port", "7681" },
+
+	/* NAPT66 */
+	{ "napt66_enable", "0" },
 #endif
 
 #if defined(APP_VLMCSD)
@@ -875,6 +925,7 @@ struct nvram_pair router_defaults[] = {
 	{ "dhcp_dnsv6_x", "" },
 	{ "dhcp_wins_x", "" },
 	{ "dhcp_filter_aaa", "0" },
+	{ "dhcp_min_ttl", "0" },
 	{ "dhcp_verbose", "0" },		/* 0 : quiet, 1: verbose DHCP, 2: verbose DHCPv6, 3: verbose all */
 	{ "dhcp_static_x", "0" },
 	{ "dhcp_static_arp", "0" },
@@ -993,15 +1044,19 @@ struct nvram_pair router_defaults[] = {
 	{ "wol_mac_last", "" },
 	{ "gw_arp_ping", "0" },
 	{ "ez_action_short", "0" },
-#if defined(BOARD_K2P)
-	{ "ez_action_long", "15" },
+#if !defined(BOARD_GPIO_BTN_RESET)
+	{ "ez_action_long", "15" },	/* Reset */
 #else
 	{ "ez_action_long", "0" },
 #endif
+#if defined (BOARD_GPIO_BTN_FN1)
 	{ "fn1_action_short", "0" },
 	{ "fn1_action_long", "0" },
+#endif
+#if defined (BOARD_GPIO_BTN_FN2)
 	{ "fn2_action_short", "0" },
 	{ "fn2_action_long", "0" },
+#endif
 	{ "watchdog_cpu", "1" },
 	{ "front_led_all", "1" },
 	{ "front_led_wan", "2" },
@@ -1014,6 +1069,7 @@ struct nvram_pair router_defaults[] = {
 	{ "ether_uport", "0" },		/* WAN port in AP mode is static upstream by default */
 	{ "ether_m2u", "2" },
 	{ "ether_green", "1" },
+	{ "ether_eee", "0" },
 #if defined(USE_RTL8367)
 	{ "ether_jumbo", "1" },
 #else
@@ -1046,7 +1102,16 @@ struct nvram_pair router_defaults[] = {
 	{ "ether_flow_lan7", "0" },
 #endif
 #endif
+
+#if defined(CONFIG_RALINK_MT7621) || (defined(CONFIG_RALINK_MT7620) && !defined(BOARD_N14U))
+#if defined(USE_MT7615_AP) || (USE_MT7915_AP) // hwnat is disabled by default
+	{ "hw_nat_mode", "2" },
+#else
+	{ "hw_nat_mode", "4" },
+#endif
+#else
 	{ "hw_nat_mode", "1" },
+#endif
 	{ "sw_nat_mode", "0" },
 #if defined(USE_SFE)
 	{ "sfe_enable", "2" },
@@ -1066,6 +1131,7 @@ struct nvram_pair router_defaults[] = {
 	{ "nf_alg_ftp1", "" },
 	{ "nf_alg_pptp", "0" },
 	{ "nf_alg_h323", "0" },
+	{ "nf_alg_rtsp", "0" },
 	{ "nf_alg_sip", "0" },
 
 	{ "help_enable", "1" },
@@ -1211,22 +1277,21 @@ struct nvram_pair tables_defaults[] = {
 	{ "sdnss_ipc_x", "" },
 #endif
 
-	{ "dhcp_staticmac_x", "" },
-	{ "dhcp_staticip_x", "" },
-	{ "dhcp_staticname_x", "" },
-
-	{"pppoemwan_mac_x", "" },
-	{"pppoemwan_ip_x", "" },
-	{"pppoemwan_name_x", "" },
-	{"pppoemwan_interface_x", "" },
-
+	{"koolproxy_mac_x", "" },
+	{"koolproxy_ip_x", "" },
+	{"koolproxy_name_x", "" },
+	
 	{"adbybyip_mac_x", "" },
 	{"adbybyip_ip_x", "" },
 	{"adbybyip_name_x", "" },
 	{"adbybyip_ip_road_x", "" },
-
+	
 	{"adbybyrules_x", "" },
 	{"adbybyrules_road_x", "" },
+
+	{ "dhcp_staticmac_x", "" },
+	{ "dhcp_staticip_x", "" },
+	{ "dhcp_staticname_x", "" },
 
 	{ "vpns_user_x", "" },
 	{ "vpns_pass_x", "" },
